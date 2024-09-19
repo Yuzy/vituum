@@ -29,10 +29,15 @@ const plugin = (pluginUserConfig = {}) => {
             const pagesRoot = relative(viteDevServer.config.root, normalizePath(pluginUserConfig.root))
             const pagesPath = relative(viteDevServer.config.root, resolve(viteDevServer.config.root, normalizePath(pluginUserConfig.dir)))
             const pagesIgnoredPath = pluginUserConfig.ignoredPaths
+            const basePath = viteDevServer.config.base || "/";
 
             return () => {
                 viteDevServer.middlewares.use(async (req, res, next) => {
                     const url = new URL(req.originalUrl, 'http://localhost')
+
+                    if (basePath !== "/") {
+                        url.pathname = url.pathname.substring(basePath.length);
+                    }
 
                     if (url.pathname.endsWith('/')) {
                         url.pathname = url.pathname + 'index.html'
@@ -65,8 +70,8 @@ const plugin = (pluginUserConfig = {}) => {
                     normalizeBasePath: pluginUserConfig.normalizeBasePath
                 },
                 file => {
-                    const pagesDir = normalizePath(relative(resolvedConfig.root, pluginUserConfig.dir))
-                    const pagesRoot = pluginUserConfig.root ? normalizePath(relative(resolvedConfig.root, pluginUserConfig.root)) : null
+                    const pagesDir = normalizePath(relative(resolvedConfig.root, resolve(resolvedConfig.root, pluginUserConfig.dir)))
+                    const pagesRoot = pluginUserConfig.root ? normalizePath(relative(resolvedConfig.root, resolve(resolvedConfig.root, pluginUserConfig.root))) : null
 
                     if (file.includes(pagesDir)) {
                         return relative(pagesDir, file)
